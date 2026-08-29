@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Terms & Conditions{% endblock %}
+{% block content %}
+<div class="form-card" style="max-width: 760px;">
+    <h2>Terms & Conditions</h2>
+    <p class="subtitle">SmartCampus Complaint Redressal System — Department of MCA, SIT Mangalore</p>
+
+    <div class="terms-body">
+        <h3>1. Purpose</h3>
+        <p>SmartCampus is an academic project built to help students report genuine hostel and
+        campus issues (electrical, plumbing, wifi, food, and other concerns) so they can be
+        routed to the right department and tracked to resolution. It is not an official,
+        institution-operated grievance system unless formally adopted by the college
+        administration.</p>
+
+        <h3>2. Account Responsibility</h3>
+        <p>You are responsible for keeping your login credentials confidential. Do not share your
+        account with others. You are responsible for all activity that happens under your
+        account, including complaints submitted using it.</p>
+
+        <h3>3. Honest Use Only</h3>
+        <p>Complaints must describe genuine issues you have personally experienced or observed on
+        campus. Submitting false, exaggerated, or fabricated complaints is a misuse of this
+        system and may result in your complaint being marked as spam and your account being
+        suspended.</p>
+
+        <h3>4. Automated Classification</h3>
+        <p>Complaint category and priority are predicted automatically using a machine learning
+        model and keyword-based rules. These predictions are estimates to help route your
+        complaint faster — they are not guaranteed to be perfectly accurate, and department
+        staff may recategorize or reprioritize a complaint on review.</p>
+
+        <h3>5. Rate Limits & Anti-Abuse Measures</h3>
+        <p>To keep the system usable for everyone, submissions are limited to a reasonable number
+        per day, with a short cooldown between submissions, and near-duplicate complaints may be
+        blocked. These limits exist to prevent flooding and are not intended to discourage
+        reporting real, distinct issues.</p>
+
+        <h3>6. Administrator Actions</h3>
+        <p>Administrators can view, update the status of, flag as spam, hide, or permanently
+        delete complaints (deletion and hiding are only available once a complaint is marked
+        Resolved). Administrators may suspend accounts found to be submitting spam or abusive
+        content. Suspended accounts lose the ability to log in until reinstated.</p>
+
+        <h3>7. Data Collected</h3>
+        <p>The system stores your name, email, room number, and the complaints you submit,
+        strictly to operate the complaint-routing and tracking features described above. Your
+        password is stored as a one-way hash and is never visible to administrators or anyone
+        else.</p>
+
+        <h3>8. No Warranty</h3>
+        <p>This is a student academic project. It is provided "as is" for demonstration and
+        educational purposes, without warranty of uptime, accuracy, or fitness for handling
+        real emergencies. For urgent safety issues (fire, electrical hazards, medical
+        emergencies), contact hostel wardens or emergency services directly rather than relying
+        solely on this system.</p>
+
+        <h3>9. Changes</h3>
+        <p>These terms may be updated as the project evolves. Continued use of the system after
+        changes are posted means you accept the updated terms.</p>
+    </div>
+
+    <p class="auth-switch"><a href="javascript:history.back()">← Back</a></p>
+</div>
+{% endblock %}

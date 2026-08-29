@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Resend Verification{% endblock %}
+{% block content %}
+<div class="auth-card">
+    <h2>Resend Verification Email</h2>
+    <p class="subtitle">Enter your registered email and we'll send a new verification link.</p>
+    <form method="POST" action="{{ url_for('resend_verification') }}">
+        <label>Email</label>
+        <input type="email" name="email" required placeholder="you@example.com">
+        <button type="submit" class="btn-primary">Send Verification Link</button>
+    </form>
+    <p class="auth-switch"><a href="{{ url_for('login') }}">Back to login</a></p>
+</div>
+{% endblock %}

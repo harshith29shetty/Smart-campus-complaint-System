@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}My Complaints{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h2>My Complaints</h2>
+    <a href="{{ url_for('submit_complaint') }}" class="btn-primary">+ New Complaint</a>
+</div>
+
+{% if complaints %}
+<div class="ticket-list">
+    {% for c in complaints %}
+    <div class="ticket status-edge-{{ c.status|lower|replace(' ', '-') }}">
+        <div class="ticket-id-col">
+            <span class="ticket-id">TKT-{{ '%04d'|format(c.id) }}</span>
+            <span class="ticket-date">{{ c.created_at.strftime('%d %b %Y') }}</span>
+        </div>
+        <div class="ticket-body">
+            <p class="ticket-title">{{ c.title or 'Untitled complaint' }}</p>
+            <p class="ticket-text">{{ c.text }}</p>
+            <div class="ticket-meta">
+                <span class="badge badge-{{ c.category }}">{{ c.category }}</span>
+                <span class="badge priority-{{ c.priority|lower }}">{{ c.priority }} priority</span>
+                <span class="ticket-dept">→ {{ c.department }}</span>
+            </div>
+            {% if c.priority_explanation %}
+            <p class="ticket-explanation">Why this priority: {{ c.priority_explanation }}</p>
+            {% endif %}
+        </div>
+        <div class="ticket-status-col">
+            <span class="status status-{{ c.status|lower|replace(' ', '-') }}">{{ c.status }}</span>
+            {% if c.status == 'Pending' %}
+            <form method="POST" action="{{ url_for('withdraw_complaint', complaint_id=c.id) }}"
+                  onsubmit="return confirm('Withdraw this complaint? This cannot be undone.');">
+                <button type="submit" class="btn-withdraw">Withdraw</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>You haven't submitted any complaints yet.</p>
+    <a href="{{ url_for('submit_complaint') }}" class="btn-primary">Submit your first complaint</a>
+</div>
+{% endif %}
+{% endblock %}

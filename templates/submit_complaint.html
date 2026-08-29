@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Submit Complaint{% endblock %}
+{% block content %}
+<div class="submit-grid">
+    <div class="form-card submit-form-card">
+        <h2>📝 Complaint Details</h2>
+        <form method="POST" action="{{ url_for('submit_complaint') }}">
+            <label>Complaint Title</label>
+            <input type="text" name="title" required placeholder="e.g. WiFi not working in computer lab">
+            <p class="field-hint">Brief, clear title describing the issue (min 5 characters)</p>
+
+            <label>Complaint Description</label>
+            <textarea name="text" rows="6" required placeholder="Describe the problem in detail. Include location, how long it has been happening, and any relevant information..."></textarea>
+            <p class="field-hint">Detailed description helps the AI predict accurately (min 20 characters)</p>
+
+            <label>Category Override (Optional)</label>
+            <select name="manual_category">
+                <option value="">— Let AI predict the category —</option>
+                {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat|capitalize }}</option>
+                {% endfor %}
+            </select>
+            <p class="field-hint">Leave empty to use the AI prediction, or select manually if you know the category.</p>
+
+            <div class="ai-note-box">
+                🤖 Our AI will automatically predict the <strong>category</strong> and <strong>priority</strong> of your complaint when you submit.
+            </div>
+
+            <button type="submit" class="btn-primary">Submit Complaint</button>
+        </form>
+    </div>
+
+    <div class="tips-card">
+        <h3>💡 Tips for Better AI Prediction</h3>
+        <ul class="tips-list">
+            <li>Mention the location (e.g. "Room 204", "Block A corridor")</li>
+            <li>State how long the problem has existed</li>
+            <li>Use words like "urgent", "leaking", "not working", "broken"</li>
+            <li>Include safety concerns if any (e.g. "shock", "dangerous")</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

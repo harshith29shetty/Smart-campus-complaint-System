@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="auth-card">
+    <h2>Register</h2>
+    <form method="POST" action="{{ url_for('register') }}">
+        <label>Full Name</label>
+        <input type="text" name="name" required placeholder="Your name" value="{{ name or '' }}">
+
+        <label>Email</label>
+        <input type="email" name="email" required placeholder="you@example.com" value="{{ email or '' }}">
+
+        <label>Password</label>
+        <input type="password" name="password" required placeholder="••••••••">
+        <p class="hint">Min 8 characters, with uppercase, lowercase, a number, and a special character.</p>
+
+        <label>Room Number</label>
+        <input type="text" name="room_number" placeholder="e.g. 204" required value="{{ room_number or '' }}">
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="agree_terms" required style="width:auto;">
+            I agree to the <a href="{{ url_for('terms') }}" target="_blank">Terms & Conditions</a>
+        </label>
+
+        <button type="submit" class="btn-primary">Register</button>
+    </form>
+    <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+</div>
+{% endblock %}

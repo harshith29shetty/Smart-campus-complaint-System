@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}SmartCampus{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="brand-mark">🏫</span>
+        <div class="brand-text">
+            <span class="brand-title">SmartCampus</span>
+            <span class="brand-sub">Dept. of MCA &middot; SIT Mangalore</span>
+        </div>
+    </div>
+    <div class="nav-links">
+        {% if current_user.is_authenticated %}
+            {% if current_user.is_admin() %}
+                <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('student_dashboard') }}">My Complaints</a>
+                <a href="{{ url_for('submit_complaint') }}">Submit Complaint</a>
+            {% endif %}
+            <span class="nav-user">{{ current_user.name }}</span>
+            <a href="{{ url_for('change_password') }}">Change Password</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<footer>
+    <p>Department of MCA — SIT Mangalore | SmartCampus Complaint Redressal System</p>
+    <p class="footer-links"><a href="{{ url_for('terms') }}">Terms & Conditions</a></p>
+</footer>
+</body>
+</html>

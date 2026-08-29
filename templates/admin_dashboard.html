@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-number">{{ total }}</span>
+        <span class="stat-label">Total Complaints</span>
+    </div>
+    <div class="stat-card stat-pending">
+        <span class="stat-number">{{ pending }}</span>
+        <span class="stat-label">Pending</span>
+    </div>
+    <div class="stat-card stat-progress">
+        <span class="stat-number">{{ in_progress }}</span>
+        <span class="stat-label">In Progress</span>
+    </div>
+    <div class="stat-card stat-resolved">
+        <span class="stat-number">{{ resolved }}</span>
+        <span class="stat-label">Resolved</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ avg_resolution_hours }}h</span>
+        <span class="stat-label">Avg. Resolution Time</span>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3>Complaints by Category</h3>
+        <canvas id="categoryChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3>Complaints by Status</h3>
+        <canvas id="statusChart"></canvas>
+    </div>
+</div>
+
+<div class="chart-card" style="margin-bottom:24px;">
+    <h3>Submissions — Last 30 Days</h3>
+    <canvas id="timelineChart" height="80"></canvas>
+</div>
+
+<div class="filters">
+    <form method="GET" action="{{ url_for('admin_dashboard') }}" class="filter-form">
+        <select name="status">
+            <option value="">All Statuses</option>
+            <option value="Pending" {% if current_filters.status == 'Pending' %}selected{% endif %}>Pending</option>
+            <option value="In Progress" {% if current_filters.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+            <option value="Resolved" {% if current_filters.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+        </select>
+
+        <select name="category">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat }}" {% if current_filters.category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="priority">
+            <option value="">All Priorities</option>
+            <option value="High" {% if current_filters.priority == 'High' %}selected{% endif %}>High</option>
+            <option value="Medium" {% if current_filters.priority == 'Medium' %}selected{% endif %}>Medium</option>
+            <option value="Low" {% if current_filters.priority == 'Low' %}selected{% endif %}>Low</option>
+        </select>
+
+        <button type="submit" class="btn-secondary">Filter</button>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-clear">Clear</a>
+        {% if show_hidden %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn-clear">Hide the {{ hidden_count }} hidden complaint(s)</a>
+        {% else %}
+            <a href="{{ url_for('admin_dashboard', show_hidden=1) }}" class="btn-clear">Show {{ hidden_count }} hidden complaint(s)</a>
+        {% endif %}
+        {% if show_spam_only %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn-clear">Show all complaints</a>
+        {% else %}
+            <a href="{{ url_for('admin_dashboard', spam=1) }}" class="btn-clear">Show {{ spam_count }} flagged as spam</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Room</th>
+                <th>Complaint</th>
+                <th>Category</th>
+                <th>Confidence</th>
+                <th>Priority</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in complaints %}
+            <tr{% if c.is_hidden or c.is_spam %} class="row-hidden"{% endif %}>
+                <td><span class="ticket-id-cell">TKT-{{ '%04d'|format(c.id) }}</span>
+                    {% if c.is_hidden %} <span class="badge badge-other">hidden</span>{% endif %}
+                    {% if c.is_spam %} <span class="badge priority-high">spam</span>{% endif %}
+                    {% if c.student.is_suspended %} <span class="badge priority-high">suspended user</span>{% endif %}
+                </td>
+                <td>{{ c.student.name }}</td>
+                <td>{{ c.student.room_number or '-' }}</td>
+                <td class="complaint-text">
+                    <details>
+                        <summary class="complaint-title-clamp">{{ c.title or 'Untitled' }}</summary>
+                        <p class="complaint-desc-full">{{ c.text }}</p>
+                    </details>
+                </td>
+                <td>
+                    <span class="badge badge-{{ c.category }}">{{ c.category }}</span>
+                    {% if c.low_confidence %}<br><span class="badge priority-medium" title="AI confidence was below 55%">low confidence</span>{% endif %}
+                    {% if c.ai_predicted_category and c.ai_predicted_category != c.category %}
+                        <br><span class="ink-soft-text" style="font-size:11px;">AI said: {{ c.ai_predicted_category }}</span>
+                    {% endif %}
+                </td>
+                <td class="mono-cell">{{ c.confidence }}%</td>
+                <td>
+                    <span class="badge priority-{{ c.priority|lower }}">{{ c.priority }}</span>
+                    {% if c.ai_predicted_priority and c.ai_predicted_priority != c.priority %}
+                        <br><span class="ink-soft-text" style="font-size:11px;">AI said: {{ c.ai_predicted_priority }}</span>
+                    {% endif %}
+                    {% if c.priority_explanation %}
+                        <br><span class="ink-soft-text priority-explanation" title="{{ c.priority_explanation }}">why?</span>
+                    {% endif %}
+                </td>
+                <td>{{ c.department }}</td>
+                <td><span class="status status-{{ c.status|lower|replace(' ', '-') }}">{{ c.status }}</span></td>
+                <td>
+                    <form method="POST" action="{{ url_for('update_complaint', complaint_id=c.id) }}" class="inline-form">
+                        <select name="status">
+                            <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Resolved" {% if c.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                        <button type="submit" class="btn-small">Update</button>
+                    </form>
+                    <div class="inline-form" style="margin-top:6px;">
+                        <form method="POST" action="{{ url_for('flag_spam', complaint_id=c.id) }}">
+                            <button type="submit" class="btn-small btn-hide">{{ 'Unflag' if c.is_spam else 'Mark spam' }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('suspend_user', user_id=c.student.id) }}" onsubmit="return confirm('{{ 'Reinstate' if c.student.is_suspended else 'Suspend' }} {{ c.student.name }}\'s account?');">
+                            <button type="submit" class="btn-small btn-delete">{{ 'Unsuspend' if c.student.is_suspended else 'Suspend user' }}</button>
+                        </form>
+                    </div>
+                    <form method="POST" action="{{ url_for('correct_classification', complaint_id=c.id) }}" class="inline-form" style="margin-top:6px;">
+                        <select name="final_category">
+                            {% for cat in categories %}
+                                <option value="{{ cat }}" {% if c.category == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="final_priority">
+                            <option value="High" {% if c.priority == 'High' %}selected{% endif %}>High</option>
+                            <option value="Medium" {% if c.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                            <option value="Low" {% if c.priority == 'Low' %}selected{% endif %}>Low</option>
+                        </select>
+                        <button type="submit" class="btn-small">Correct</button>
+                    </form>
+                    {% if c.status == 'Resolved' %}
+                    <div class="inline-form" style="margin-top:6px;">
+                        <form method="POST" action="{{ url_for('hide_complaint', complaint_id=c.id) }}">
+                            <button type="submit" class="btn-small btn-hide">{{ 'Unhide' if c.is_hidden else 'Hide' }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('delete_complaint', complaint_id=c.id) }}" onsubmit="return confirm('Permanently delete ticket TKT-{{ '%04d'|format(c.id) }}? This cannot be undone.');">
+                            <button type="submit" class="btn-small btn-delete">Delete</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="10" class="empty-cell">No complaints found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const categoryData = {{ category_counts | tojson }};
+const statusData = {
+    "Pending": {{ pending }},
+    "In Progress": {{ in_progress }},
+    "Resolved": {{ resolved }}
+};
+
+new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(categoryData).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+        datasets: [{
+            label: 'Complaints',
+            data: Object.values(categoryData),
+            backgroundColor: ['#4f7cff', '#36c99f', '#ffb03a', '#ff6b6b', '#9d7bff']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(statusData),
+        datasets: [{
+            data: Object.values(statusData),
+            backgroundColor: ['#ffb03a', '#4f7cff', '#36c99f']
+        }]
+    },
+    options: { responsive: true }
+});
+
+new Chart(document.getElementById('timelineChart'), {
+    type: 'line',
+    data: {
+        labels: {{ timeline_labels | tojson }},
+        datasets: [{
+            label: 'Complaints submitted',
+            data: {{ timeline_values | tojson }},
+            borderColor: '#3457C4',
+            backgroundColor: 'rgba(52, 87, 196, 0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import flask, flask_sqlalchemy, flask_login, sklearn, joblib; print\\('core deps OK'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python _tmp_verify_test.py)"
+    ]
+  }
+}
